@@ -1,0 +1,100 @@
+/* Fontes locais, para a página funcionar sem internet. */
+@font-face {
+  font-family: 'Alfa Slab One';
+  src: url('./fonts/alfa-slab-one-latin-400-normal.woff2') format('woff2');
+  font-weight: 400;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Karla';
+  src: url('./fonts/karla-latin-wght-normal.woff2') format('woff2');
+  font-weight: 200 800;
+  font-display: swap;
+}
+
+:root {
+  /* Cores das fachadas do Centro Histórico */
+  --cal: #f3f7fb;
+  --branco: #ffffff;
+  --noite: #0e1f5b;
+  --anil: #1b3fab;
+  --gema: #ffc21a;
+  --rosa: #ec4c86;
+  --folha: #12895f;
+  --urucum: #c93a1f;
+  --linha: #aab4d0;
+  --apagado: #6b7699;
+
+  /* Cada versão da atividade troca só estes dois valores */
+  --ceu: #4cc38a;
+  --primaria: #0f7a55;
+
+  --font-display: 'Alfa Slab One', Georgia, serif;
+  --font-body: 'Karla', system-ui, sans-serif;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  margin: 0;
+  background: var(--cal);
+  color: var(--noite);
+  font: 400 1.0625rem/1.55 var(--font-body);
+}
+
+h1,
+h2 {
+  margin: 0;
+  font-family: var(--font-display);
+  font-weight: 400;
+  line-height: 1.08;
+}
+
+h2 {
+  font-size: clamp(1.75rem, 4vw, 2.75rem);
+}
+
+img {
+  max-width: 100%;
+  height: auto;
+}
+
+a {
+  color: inherit;
+}
+
+:focus-visible {
+  outline: 3px solid var(--rosa);
+  outline-offset: 2px;
+}
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}

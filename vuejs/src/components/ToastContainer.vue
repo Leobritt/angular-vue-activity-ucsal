@@ -1,0 +1,118 @@
+<script>
+// Desenha as notificações do serviço global this.$toast. Basta um na aplicação.
+export default {
+  name: 'ToastContainer',
+  data() {
+    return {
+      marks: { success: '✓', error: '!', info: 'i' },
+    };
+  },
+  computed: {
+    toasts() {
+      return this.$toast.state.toasts;
+    },
+  },
+};
+</script>
+
+<template>
+  <TransitionGroup name="toast" tag="div" class="toast-stack" aria-live="polite">
+    <div
+      v-for="toast in toasts"
+      :key="toast.id"
+      class="toast"
+      :class="`toast--${toast.type}`"
+      :role="toast.type === 'error' ? 'alert' : 'status'"
+    >
+      <span class="toast-mark" aria-hidden="true">{{ marks[toast.type] }}</span>
+      <p class="toast-message">{{ toast.message }}</p>
+      <button type="button" class="toast-close" aria-label="Fechar notificação" @click="$toast.dismiss(toast.id)">×</button>
+    </div>
+  </TransitionGroup>
+</template>
+
+<style scoped>
+.toast-stack {
+  position: fixed;
+  z-index: 50;
+  right: 1rem;
+  bottom: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  width: min(380px, calc(100vw - 2rem));
+}
+
+.toast {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  padding: 0.75rem;
+  border: 2px solid var(--noite);
+  border-radius: 3px;
+  background: var(--branco);
+}
+
+.toast-enter-active {
+  animation: toast-in 0.2s ease-out;
+}
+
+.toast-leave-active {
+  animation: toast-out 0.2s ease-in forwards;
+}
+
+.toast-mark {
+  flex: none;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  color: var(--branco);
+  font-weight: 800;
+  line-height: 26px;
+  text-align: center;
+}
+
+.toast--success .toast-mark {
+  background: var(--folha);
+}
+
+.toast--error .toast-mark {
+  background: var(--urucum);
+}
+
+.toast--info .toast-mark {
+  background: var(--anil);
+}
+
+.toast-message {
+  flex: 1;
+  margin: 0;
+  line-height: 1.35;
+}
+
+.toast-close {
+  flex: none;
+  width: 28px;
+  height: 28px;
+  border: 0;
+  background: none;
+  color: inherit;
+  font-size: 1.5rem;
+  line-height: 1;
+  cursor: pointer;
+}
+
+@keyframes toast-in {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+}
+
+@keyframes toast-out {
+  to {
+    opacity: 0;
+    transform: translateX(24px);
+  }
+}
+</style>
