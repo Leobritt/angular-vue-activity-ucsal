@@ -1,0 +1,33 @@
+app-progress-bar {
+  display: block;
+}
+
+.progress-head {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 0.375rem;
+  font-weight: 700;
+}
+
+.progress-label {
+  overflow-wrap: anywhere;
+}
+
+.progress-percent {
+  font-variant-numeric: tabular-nums;
+}
+
+.progress-track {
+  height: 14px;
+  overflow: hidden;
+  border: 2px solid var(--noite);
+  border-radius: 3px;
+  background: var(--branco);
+}
+
+.progress-fill {
+  height: 100%;
+  background: var(--primaria);
+  transition: width 0.2s ease;
+}

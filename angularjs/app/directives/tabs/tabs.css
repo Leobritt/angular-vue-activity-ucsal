@@ -1,0 +1,39 @@
+app-tabs {
+  display: block;
+}
+
+.tabs-list {
+  display: flex;
+  gap: 0.25rem;
+  overflow-x: auto;
+  border-bottom: 2px solid var(--noite);
+}
+
+.tabs-button {
+  flex: none;
+  padding: 0.75rem 1rem;
+  border: 0;
+  border-bottom: 5px solid transparent;
+  background: none;
+  color: inherit;
+  font: 700 1rem/1.2 var(--font-body);
+  cursor: pointer;
+}
+
+.tabs-button:hover {
+  border-bottom-color: var(--linha);
+}
+
+.tabs-button.is-active {
+  border-bottom-color: var(--rosa);
+}
+
+.tabs-panel {
+  min-height: 7.5rem;
+  padding: 1.25rem 0.25rem;
+}
+
+.tabs-panel p {
+  max-width: 60ch;
+  margin: 0;
+}

@@ -1,0 +1,211 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Fita &amp; Barro | AngularJS</title>
+  <meta name="description" content="Loja fictícia de artesanato baiano feita com AngularJS.">
+
+  <link rel="stylesheet" href="css/base.css">
+  <link rel="stylesheet" href="css/layout.css">
+  <link rel="stylesheet" href="app/directives/accordion/accordion.css">
+  <link rel="stylesheet" href="app/directives/pagination/pagination.css">
+  <link rel="stylesheet" href="app/directives/progress-bar/progress-bar.css">
+  <link rel="stylesheet" href="app/directives/tabs/tabs.css">
+  <link rel="stylesheet" href="app/directives/dropdown/dropdown.css">
+  <link rel="stylesheet" href="app/directives/toast/toast.css">
+</head>
+<body ng-app="lojaApp" ng-strict-di ng-cloak>
+
+  <!-- Cabeçalho: menu suspenso da sacola, com um callback por opção -->
+  <header id="inicio" class="hero" ng-controller="HeaderController">
+    <div class="container topbar">
+      <a class="brand" href="#inicio">Fita &amp; Barro</a>
+      <nav class="topnav" aria-label="Seções da página">
+        <a href="#pecas">Peças</a>
+        <a href="#detalhes">Detalhes</a>
+        <a href="#encomenda">Encomenda</a>
+        <a href="#duvidas">Dúvidas</a>
+      </nav>
+      <app-dropdown class="dropdown--end" label="Sacola ({{ bagCount }})" options="bagOptions"></app-dropdown>
+    </div>
+
+    <div class="container hero-copy">
+      <h1>Artesanato da Bahia, direto de quem faz</h1>
+      <p>Cerâmica, cestaria, renda, madeira e fitas de ateliês do Recôncavo e do sertão.</p>
+      <a class="button" href="#pecas">Ver as peças</a>
+    </div>
+
+    <div class="hero-street">
+      <img src="assets/ladeira.svg" alt="" width="1600" height="520">
+    </div>
+  </header>
+
+  <main>
+    <!-- Catálogo: busca (ng-model), menus suspensos, filtros e paginação -->
+    <section id="pecas" class="section" ng-controller="CatalogController">
+      <div class="container">
+        <h2>Peças à venda</h2>
+
+        <div class="shipping-goal">
+          <app-progress-bar value="shippingProgress" label="{{ shippingMessage }}" show-percent="false"></app-progress-bar>
+        </div>
+
+        <div class="toolbar">
+          <label class="field field--grow">
+            <span class="field-label">Buscar peça ou cidade</span>
+            <input type="search" ng-model="filters.term" ng-change="onFiltersChange()" placeholder="Moringa, renda, Cachoeira">
+          </label>
+
+          <div class="field">
+            <span class="field-label">Categoria</span>
+            <app-dropdown label="Categoria" options="categoryOptions" selected="filters.category" on-select="setCategory(option.value)"></app-dropdown>
+          </div>
+
+          <div class="field">
+            <span class="field-label">Ordenação</span>
+            <app-dropdown label="Ordenar" options="sortOptions" selected="filters.sort" on-select="setSort(option.value)"></app-dropdown>
+          </div>
+
+          <label class="field">
+            <span class="field-label">Por página</span>
+            <select ng-model="pagination.pageSize" ng-options="size for size in pageSizes" ng-change="onFiltersChange()"></select>
+          </label>
+        </div>
+
+        <p class="result-count" aria-live="polite">
+          {{ filteredCount }} {{ filteredCount === 1 ? 'peça encontrada' : 'peças encontradas' }}
+        </p>
+
+        <ul class="product-grid" ng-show="visibleProducts.length">
+          <li class="product" ng-repeat="product in visibleProducts track by product.id">
+            <div class="art" ng-class="'art--' + product.categoryId"></div>
+            <h3 class="product-name">{{ product.name }}</h3>
+            <p class="product-meta">{{ product.categoryLabel }}, de {{ product.origin }}</p>
+            <p class="product-price">{{ product.price | brl }}</p>
+            <div class="product-actions">
+              <button type="button" class="button button--small" ng-click="addToBag(product)">Adicionar</button>
+              <button type="button" class="button button--small button--ghost" ng-click="viewDetails(product)">Ver detalhes</button>
+            </div>
+          </li>
+        </ul>
+
+        <div class="empty-state" ng-hide="visibleProducts.length">
+          <p>Nenhuma peça combina com essa busca.</p>
+          <button type="button" class="button button--small" ng-click="clearFilters()">Limpar busca e filtros</button>
+        </div>
+
+        <app-pagination total-pages="totalPages" current-page="pagination.currentPage" on-page-change="goToPage(page)"></app-pagination>
+      </div>
+    </section>
+
+    <!-- Detalhes: abas montadas a partir da peça selecionada -->
+    <section id="detalhes" class="section section--tinted" ng-controller="ProductDetailController">
+      <div class="container detail">
+        <div class="art art--large" ng-class="'art--' + product.categoryId"></div>
+        <div class="detail-info">
+          <h2>{{ product.name }}</h2>
+          <p class="detail-price">{{ product.price | brl }}</p>
+          <app-tabs tabs="tabs"></app-tabs>
+          <button type="button" class="button" ng-click="addToBag()">Adicionar à sacola</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- Encomenda: formulário, envio de foto e simulador de produção -->
+    <section id="encomenda" class="section" ng-controller="OrderController">
+      <div class="container order">
+        <form name="orderForm" class="order-form" novalidate ng-submit="submitOrder(orderForm)">
+          <h2>Encomende uma peça</h2>
+
+          <label class="field">
+            <span class="field-label">Seu nome</span>
+            <input type="text" name="customerName" ng-model="order.customerName" required autocomplete="name">
+            <span class="field-error" ng-show="showError(orderForm, orderForm.customerName)">Informe seu nome.</span>
+          </label>
+
+          <label class="field">
+            <span class="field-label">Descreva a peça</span>
+            <textarea name="description" rows="4" maxlength="300" ng-model="order.description" required
+                      placeholder="Formato, cor, medidas e para quando precisa"></textarea>
+            <span class="field-hint">{{ order.description.length || 0 }} de 300 caracteres</span>
+            <span class="field-error" ng-show="showError(orderForm, orderForm.description)">Descreva a peça que você quer.</span>
+          </label>
+
+          <div class="field">
+            <span class="field-label">Foto de referência (opcional)</span>
+            <label class="button button--small button--ghost file-button" ng-hide="isUploading()">
+              Escolher imagem
+              <input type="file" class="visually-hidden" accept="image/*" app-file-change="onFileSelected(file)">
+            </label>
+            <span class="field-hint">JPG, PNG ou WebP de até 5 MB. O envio é simulado e o arquivo não sai do seu computador.</span>
+          </div>
+
+          <div class="upload-status" ng-if="upload.file">
+            <app-progress-bar value="upload.progress" label="{{ upload.file.name }} ({{ upload.file.size | fileSize }})"></app-progress-bar>
+            <button type="button" class="button button--small button--ghost" ng-if="isUploading()" ng-click="cancelUpload()">Cancelar envio</button>
+          </div>
+
+          <button type="submit" class="button">Enviar encomenda</button>
+        </form>
+
+        <aside class="production">
+          <h2>Acompanhe a produção</h2>
+          <p>Arraste para simular o andamento de uma peça no ateliê.</p>
+          <label class="field">
+            <span class="field-label">Andamento</span>
+            <input type="range" min="0" max="100" step="1" ng-model="production.progress" ng-change="onProductionChange()">
+          </label>
+          <app-progress-bar value="production.progress" label="{{ production.progress | productionStage }}"></app-progress-bar>
+        </aside>
+      </div>
+    </section>
+
+    <!-- Dúvidas: acordeão que recebe títulos e conteúdos por binding -->
+    <section id="duvidas" class="section section--tinted" ng-controller="FaqController">
+      <div class="container faq">
+        <h2>Dúvidas frequentes</h2>
+        <app-accordion items="questions" initial-open="0"></app-accordion>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <div class="container">
+      <p>Loja e peças fictícias. Atividade III da disciplina Tópicos Avançados em Programação, UCSal. Versão AngularJS.</p>
+    </div>
+  </footer>
+
+  <app-toast-container></app-toast-container>
+
+  <!-- Framework -->
+  <script src="vendor/angular.min.js"></script>
+
+  <!-- Módulo principal: precisa vir antes dos arquivos que usam os módulos internos -->
+  <script src="app/app.js"></script>
+
+  <!-- Serviços e filtros -->
+  <script src="app/services/catalog.data.js"></script>
+  <script src="app/services/product.service.js"></script>
+  <script src="app/services/bag.service.js"></script>
+  <script src="app/services/faq.service.js"></script>
+  <script src="app/services/upload.service.js"></script>
+  <script src="app/filters/filters.js"></script>
+
+  <!-- Componentes visuais (cada um é um módulo independente) -->
+  <script src="app/directives/accordion/accordion.directive.js"></script>
+  <script src="app/directives/pagination/pagination.directive.js"></script>
+  <script src="app/directives/progress-bar/progress-bar.directive.js"></script>
+  <script src="app/directives/tabs/tabs.directive.js"></script>
+  <script src="app/directives/dropdown/dropdown.directive.js"></script>
+  <script src="app/directives/toast/toast.js"></script>
+  <script src="app/directives/file-change/file-change.directive.js"></script>
+
+  <!-- Controladores -->
+  <script src="app/controllers/header.controller.js"></script>
+  <script src="app/controllers/catalog.controller.js"></script>
+  <script src="app/controllers/product-detail.controller.js"></script>
+  <script src="app/controllers/order.controller.js"></script>
+  <script src="app/controllers/faq.controller.js"></script>
+</body>
+</html>
